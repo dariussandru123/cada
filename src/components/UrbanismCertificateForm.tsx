@@ -160,13 +160,21 @@ export default function UrbanismCertificateForm({ onClose, onSuccess, initialCf,
     if (foundFeature && foundFeature.properties) {
       console.log('✅ Found feature:', foundFeature.properties);
       setFoundInGis(true);
-      
+
       // Extract data with expanded key list
       const area = findProperty(foundFeature.properties, ['Suprafata', 'suprafata', 'Area', 'area', 'S_teren', 'mp', 'st']);
       const owner = findProperty(foundFeature.properties, ['Proprietar', 'proprietar', 'Nume', 'nume', 'owner', 'deinator']);
       const address = findProperty(foundFeature.properties, ['Adresa', 'adresa', 'Locatie', 'strada']);
       const usage = findProperty(foundFeature.properties, ['Categoria', 'folosinta', 'utilizare', 'cat_fol']);
       const regime = findProperty(foundFeature.properties, ['Intravilan', 'intravilan', 'regim']);
+
+      console.log('📊 GIS Data extracted:', {
+        area: area ? Number(area) : 'Not found',
+        owner: owner ? String(owner) : 'Not found',
+        address: address ? String(address) : 'Not found',
+        usage: usage ? String(usage) : 'Not found',
+        regime: regime ? String(regime) : 'Not found'
+      });
 
       setFormData(prev => ({
         ...prev,
@@ -284,7 +292,7 @@ export default function UrbanismCertificateForm({ onClose, onSuccess, initialCf,
               <div>
                 <h4 className="text-sm font-semibold text-green-900">Date preluate din GIS</h4>
                 <p className="text-sm text-green-700 mt-1">
-                  Datele despre suprafață, proprietar și adresă au fost completate automat pe baza numărului CF identificat în hartă.
+                  Următoarele date au fost completate automat din harta GIS: <strong>Suprafață</strong>, <strong>Categorie Folosință</strong>, Proprietar și Adresă.
                 </p>
               </div>
             </div>
