@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+    
+    // Feedback collection
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && 
+                     (resource.data.uatId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // Contracts collection (Agricultural Registry)
+    match /contracts/{contractId} {
+      // Allow users to create contracts if they are authenticated
+      // We validate that the uatId in the data matches their auth uid
+      allow create: if request.auth != null && request.resource.data.uatId == request.auth.uid;
+      
+      // Allow users to read/update/delete ONLY their own contracts
+      allow read, update, delete: if request.auth != null && 
+                                     (resource.data.uatId == request.auth.uid || isAdmin());
+    }
+  }
+}

@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Shapefiles
+    match /shapefiles/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if isAdmin();
+    }
+    
+    // Contract Documents (PDFs)
+    // Structure: contracts/{uatId}/{filename}
+    match /contracts/{userId}/{allPaths=**} {
+      // Users can read/write files in their own folder
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Admins can access everything
+      allow read: if isAdmin();
+    }
+    
+    // Allow admins to read and write all files generally (fallback)
+    match /{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
